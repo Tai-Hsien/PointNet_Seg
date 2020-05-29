@@ -99,8 +99,6 @@ if __name__ == '__main__':
             
             # forward + backward + optimize
             outputs = model(inputs)
-#            print(outputs.shape)
-#            print(one_hot_labels.shape)
             loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights)
             dsc = weighting_DSC(outputs, one_hot_labels, class_weights)
             sen = weighting_SEN(outputs, one_hot_labels, class_weights)
@@ -155,15 +153,15 @@ if __name__ == '__main__':
             for i_batch, batched_val_sample in enumerate(val_loader):
                 
                 # send mini-batch to device
-                val_inputs = batched_val_sample['cells'].to(device, dtype=torch.float)
-                val_labels = batched_val_sample['labels'].to(device, dtype=torch.long)
-                one_hot_labels = nn.functional.one_hot(val_labels[:, 0, :], num_classes=num_classes)
+                inputs = batched_val_sample['cells'].to(device, dtype=torch.float)
+                labels = batched_val_sample['labels'].to(device, dtype=torch.long)
+                one_hot_labels = nn.functional.one_hot(labels[:, 0, :], num_classes=num_classes)
                 
-                val_outputs = model(val_inputs).detach()
-                val_loss = Generalized_Dice_Loss(val_outputs, one_hot_labels, class_weights).detach()
-                val_dsc = weighting_DSC(val_outputs, one_hot_labels, class_weights).detach()
-                val_sen = weighting_SEN(val_outputs, one_hot_labels, class_weights).detach()
-                val_ppv = weighting_PPV(val_outputs, one_hot_labels, class_weights).detach()
+                outputs = model(inputs).detach()
+                val_loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights).detach()
+                val_dsc = weighting_DSC(outputs, one_hot_labels, class_weights).detach()
+                val_sen = weighting_SEN(outputs, one_hot_labels, class_weights).detach()
+                val_ppv = weighting_PPV(outputs, one_hot_labels, class_weights).detach()
                 
                 running_val_loss += val_loss.item()
                 running_val_mdsc += val_dsc.item()
