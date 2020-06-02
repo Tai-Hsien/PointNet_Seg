@@ -3,7 +3,7 @@ from easy_mesh_vtk import *
 
 if __name__ == "__main__":
 
-  vtk_path = '/home/brucewu/data/OSU_Mesh_Tooth_Segmentation/GroundTruth/maxillary_surface_T0_np10000_bg_0_vtk'
+  vtk_path = '/data/data/OSU_Mesh_Tooth_Segmentation/GroundTruth/maxillary_surface_T0_np10000_bg_0_vtk'
   output_save_path = './augmentation_vtk_data/'
   if not os.path.exists(output_save_path):
     os.mkdir(output_save_path)

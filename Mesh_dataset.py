@@ -72,8 +72,6 @@ class Mesh_Dataset(Dataset):
         # initialize batch of input and label
         X_train = np.zeros([self.patch_size, X.shape[1]], dtype='float32')
         Y_train = np.zeros([self.patch_size, Y.shape[1]], dtype='int32')
-#        S1 = np.zeros([patch_size, patch_size], dtype='float32')
-#        S2 = np.zeros([patch_size, patch_size], dtype='float32')
         
         # calculate number of valid cells (tooth instead of gingiva)
         positive_idx = np.argwhere(labels>0)[:, 0] #tooth idx
@@ -102,13 +100,6 @@ class Mesh_Dataset(Dataset):
         X_train = X_train.transpose(1, 0)
         Y_train = Y_train.transpose(1, 0)
         
-#        D = distance_matrix(X_train[:, 9:12], X_train[:, 9:12])
-#        S1[D<0.1] = 1.0
-#        S1 = S1 / np.dot(np.sum(S1, axis=1, keepdims=True), np.ones((1, patch_size)))
-#        
-#        S2[D<0.2] = 1.0
-#        S2 = S2 / np.dot(np.sum(S2, axis=1, keepdims=True), np.ones((1, patch_size)))
-
         sample = {'cells': torch.from_numpy(X_train), 'labels': torch.from_numpy(Y_train)}
         
         return sample

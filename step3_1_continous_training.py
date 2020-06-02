@@ -22,14 +22,14 @@ if __name__ == '__main__':
     previous_check_point_path = './models'
     previous_check_point_name = 'latest_checkpoint.tar'
     
-    model_path = './models/'
-    model_name = 'Mesh_Segementation_PointNet_15_classes_72samples' #remember to include the project title (e.g., ALV)
+    model_path = './models'
+    model_name = 'Mesh_Segementation_PointNet_test_15_classes_72samples' #remember to include the project title (e.g., ALV)
     checkpoint_name = 'latest_checkpoint_cont.tar'
     
     num_classes = 15
     num_channels = 15 #number of features
     num_epochs = 200
-    num_workers = 4
+    num_workers = 0
     train_batch_size = 20
     val_batch_size = 20
     num_batches_to_print = 20
@@ -46,10 +46,10 @@ if __name__ == '__main__':
     # set dataset
     training_dataset = Mesh_Dataset(data_list_path=train_list,
                                     num_classes=num_classes,
-                                    patch_size=9000)
+                                    patch_size=6000)
     val_dataset = Mesh_Dataset(data_list_path=val_list,
                                num_classes=num_classes,
-                               patch_size=9000)
+                               patch_size=6000)
     
     train_loader = DataLoader(dataset=training_dataset,
                               batch_size=train_batch_size,
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # set model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = PointNet_Seg(num_classes=num_classes, channel=num_channels).to(device, dtype=torch.float)
-    opt = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
+    opt = optim.Adam(model.parameters(), amsgrad=True)
     #scheduler = StepLR(opt, step_size=2, gamma=0.8)
     
     # re-load
@@ -126,8 +126,6 @@ if __name__ == '__main__':
             
             # forward + backward + optimize
             outputs = model(inputs)
-#            print(outputs.shape)
-#            print(one_hot_labels.shape)
             loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights)
             dsc = weighting_DSC(outputs, one_hot_labels, class_weights)
             sen = weighting_SEN(outputs, one_hot_labels, class_weights)
@@ -186,20 +184,20 @@ if __name__ == '__main__':
                 labels = batched_val_sample['labels'].to(device, dtype=torch.long)
                 one_hot_labels = nn.functional.one_hot(labels[:, 0, :], num_classes=num_classes)
                 
-                outputs = model(inputs).detach()
-                val_loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights).detach()
-                val_dsc = weighting_DSC(outputs, one_hot_labels, class_weights).detach()
-                val_sen = weighting_SEN(outputs, one_hot_labels, class_weights).detach()
-                val_ppv = weighting_PPV(outputs, one_hot_labels, class_weights).detach()
+                outputs = model(inputs)
+                loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights)
+                dsc = weighting_DSC(outputs, one_hot_labels, class_weights)
+                sen = weighting_SEN(outputs, one_hot_labels, class_weights)
+                ppv = weighting_PPV(outputs, one_hot_labels, class_weights)
                 
-                running_val_loss += val_loss.item()
-                running_val_mdsc += val_dsc.item()
-                running_val_msen += val_sen.item()
-                running_val_mppv += val_ppv.item()
-                val_loss_epoch += val_loss.item()
-                val_mdsc_epoch += val_dsc.item()
-                val_msen_epoch += val_sen.item()
-                val_mppv_epoch += val_ppv.item()
+                running_val_loss += loss.item()
+                running_val_mdsc += dsc.item()
+                running_val_msen += sen.item()
+                running_val_mppv += ppv.item()
+                val_loss_epoch += loss.item()
+                val_mdsc_epoch += dsc.item()
+                val_msen_epoch += sen.item()
+                val_mppv_epoch += ppv.item()
                 
                 if i_batch % num_batches_to_print == num_batches_to_print-1:  # print every N mini-batches
                     print('[Epoch: {0}/{1}, Val batch: {2}/{3}] val_loss: {4}, val_dsc: {5}, val_sen: {6}, val_ppv: {7}'.format(epoch+1, num_epochs, i_batch+1, len(val_loader), running_val_loss/num_batches_to_print, running_val_mdsc/num_batches_to_print, running_val_msen/num_batches_to_print, running_val_mppv/num_batches_to_print))

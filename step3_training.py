@@ -20,13 +20,13 @@ if __name__ == '__main__':
     val_list = './val_list_1.csv'
     
     model_path = './models/'
-    model_name = 'Mesh_Segementation_PointNet_15_classes_72samples' #remember to include the project title (e.g., ALV)
+    model_name = 'Mesh_Segementation_PointNet_test_15_classes_72samples' #remember to include the project title (e.g., ALV)
     checkpoint_name = 'latest_checkpoint.tar'
     
     num_classes = 15
     num_channels = 15 #number of features
     num_epochs = 200
-    num_workers = 4
+    num_workers = 0
     train_batch_size = 20
     val_batch_size = 20
     num_batches_to_print = 20
@@ -43,10 +43,10 @@ if __name__ == '__main__':
     # set dataset
     training_dataset = Mesh_Dataset(data_list_path=train_list,
                                     num_classes=num_classes,
-                                    patch_size=9000)
+                                    patch_size=6000)
     val_dataset = Mesh_Dataset(data_list_path=val_list,
                                num_classes=num_classes,
-                               patch_size=9000)
+                               patch_size=6000)
     
     train_loader = DataLoader(dataset=training_dataset,
                               batch_size=train_batch_size,
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # set model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = PointNet_Seg(num_classes=num_classes, channel=num_channels).to(device, dtype=torch.float)
-    opt = optim.Adam(model.parameters(), lr=0.0001, amsgrad=True)
+    opt = optim.Adam(model.parameters(), amsgrad=True)
     #scheduler = StepLR(opt, step_size=2, gamma=0.8)
     
     losses, mdsc, msen, mppv = [], [], [], []
@@ -157,7 +157,7 @@ if __name__ == '__main__':
                 labels = batched_val_sample['labels'].to(device, dtype=torch.long)
                 one_hot_labels = nn.functional.one_hot(labels[:, 0, :], num_classes=num_classes)
                 
-                outputs = model(inputs).detach()
+                outputs = model(inputs)
                 loss = Generalized_Dice_Loss(outputs, one_hot_labels, class_weights)
                 dsc = weighting_DSC(outputs, one_hot_labels, class_weights)
                 sen = weighting_SEN(outputs, one_hot_labels, class_weights)
