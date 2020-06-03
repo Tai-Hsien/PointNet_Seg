@@ -19,7 +19,7 @@ if __name__ == '__main__':
     train_list = './train_list_1.csv'
     val_list = './val_list_1.csv'
     
-    model_path = './models/'
+    model_path = './models'
     model_name = 'Mesh_Segementation_PointNet_test_15_classes_72samples' #remember to include the project title (e.g., ALV)
     checkpoint_name = 'latest_checkpoint.tar'
     
@@ -215,7 +215,7 @@ if __name__ == '__main__':
                     'val_mdsc': val_mdsc,
                     'val_msen': val_msen,
                     'val_mppv': val_mppv},
-                    model_path+checkpoint_name)
+                    os.path.join(model_path, checkpoint_name))
         
         # save the best model
         if best_val_dsc < val_mdsc[-1]:
@@ -231,7 +231,7 @@ if __name__ == '__main__':
                         'val_mdsc': val_mdsc,
                         'val_msen': val_msen,
                         'val_mppv': val_mppv},
-                        model_path+'{}_best.tar'.format(model_name))
+                        os.path.join(model_path, '{}_best.tar'.format(model_name)))
             
         # save all losses and metrics data
         pd_dict = {'loss': losses, 'DSC': mdsc, 'SEN': msen, 'PPV': mppv, 'val_loss': val_losses, 'val_DSC': val_mdsc, 'val_SEN': val_msen, 'val_PPV': val_mppv}
